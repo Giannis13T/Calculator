@@ -32,6 +32,7 @@ public class CalculatorController {
 	@FXML private Button div;
 	String text = null;
 	boolean textNotNull = false;
+	String result = null;
 	
 	
 	@FXML
@@ -115,7 +116,49 @@ public class CalculatorController {
 		
 	}
 	
+	// Calculates the result of the mathematical expression given as a string
 	private String calculate(String text) {
-		return null;
+		
+		boolean parenthesesFound = search(text,'(')&&search(text,')');
+		String[] tokens = null;
+		if (parenthesesFound) { // calculate the expressions' into parentheses values
+			tokens = text.split("[()]");
+			for (int i=1; i<tokens.length; i+=2) {
+				String res = getResult(tokens[i]);
+				tokens[i] = res;
+			}
+		}
+		// calculate the entire expression value after the values in the parentheses have been calculated
+	if (tokens==null) result = getResult(text);
+		else {
+			text = tokens[0];
+			for (int i=1; i<tokens.length; i++) {
+				text = text+tokens[i];
+			}
+			result = getResult(text);
+		}
+		return result;
 	}
+	
+	// Searches if a specific character in a string exists
+	private boolean search(String s, char ch) {
+		
+		boolean found = false;
+		for (int i=0; i<s.length(); i++) {
+			if (s.charAt(i)==ch) {
+				found = true;
+				break;
+			}
+		}
+		return found;
+		
+	}
+	
+	// Calculates the value of a mathematical expression without parentheses
+	private String getResult(String text) {
+		
+		
+		
+	}
+	
 }
