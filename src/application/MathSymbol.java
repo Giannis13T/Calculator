@@ -5,8 +5,8 @@ public class MathSymbol {
 	private char symbol; // The math symbol
 	private int priority; // The symbol's priority
 	
-	/* The number of a symbol's occurrence. The variable considers symbols with equal priority as the same.
-	 * For example, the first '+' occurrence would be 1 , and then a '-' occurrence would be 2. */
+	/* The number of a symbol's occurrence. For example, the first symbol occurrence will be 1 ,
+	 * and the second symbol occurrence will be 2. */
 	private int occurrence;
 	
 	// Constructor
