@@ -1,5 +1,7 @@
 package application;
 
+import java.util.ArrayList;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -129,7 +131,7 @@ public class CalculatorController {
 			}
 		}
 		// calculate the entire expression value after the values in the parentheses have been calculated
-	if (tokens==null) result = getResult(text);
+		if (tokens==null) result = getResult(text);
 		else {
 			text = tokens[0];
 			for (int i=1; i<tokens.length; i++) {
@@ -157,7 +159,52 @@ public class CalculatorController {
 	// Calculates the value of a mathematical expression without parentheses
 	private String getResult(String text) {
 		
-		
+		String[] nums = text.split("\\+|\\-|\\*|\\/");
+		while (nums.length>1) {
+			double res = -1;
+			boolean foundsym1 = false;
+			boolean foundsym2 = false;
+			int addSubInd = -1;
+			int mulDivInd = -1;
+			int occ = 0;
+			int occ2 = 0;
+			for (int i=0; i<text.length(); i++) {
+				if (text.charAt(i)=='+'||text.charAt(i)=='-') {
+					if (!foundsym1) {
+						foundsym1 = true;
+						addSubInd = i;
+						occ++;
+					} else occ2++;
+				} else if (text.charAt(i)=='*'||text.charAt(i)=='/') {
+					foundsym2=true;
+					mulDivInd = i;
+					occ = occ+1+occ2;
+					if (foundsym2) break;
+				}
+			}
+			if ((occ>0)&&(foundsym2)) {
+				char s = ' ';
+				String s1 = nums[occ-1];
+				String s2 = nums[occ];
+				if (mulDivInd>=0) s = text.charAt(mulDivInd);
+				if (s=='*') res = (Double.parseDouble(s1)*Double.parseDouble(s2));
+				else if (s=='/') res = (Double.parseDouble(s1)/Double.parseDouble(s2));
+				String sres = Double.toString(res);
+				text = text.replace(text.substring(mulDivInd-s1.length(), mulDivInd+s2.length()+1), sres);
+				nums = text.split("\\+|\\-|\\*|\\/");
+			} else if ((occ>0)&&(!foundsym2)) {
+				char s = ' ';
+				String s1 = nums[occ-1];
+				String s2 = nums[occ];
+				if (addSubInd>=0) s = text.charAt(addSubInd);
+				if (s=='+') res = (Double.parseDouble(s1)+Double.parseDouble(s2));
+				else if (s=='-') res = (Double.parseDouble(s1)-Double.parseDouble(s2));
+				String sres = Double.toString(res);
+				text = text.replace(text.substring(addSubInd-s1.length(), addSubInd+s2.length()+1), sres);
+				nums = text.split("\\+|\\-|\\*|\\/");
+			}
+		}
+		return nums[0];
 		
 	}
 	
