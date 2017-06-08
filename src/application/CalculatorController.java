@@ -109,10 +109,6 @@ public class CalculatorController {
 		
 	}
 	
-	@FXML
-	private void menuItemClicked(ActionEvent e) {
-		
-	}
 	
 	// Calculates the result of the mathematical expression given as a string
 	private String calculate(String text) {
