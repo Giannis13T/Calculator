@@ -77,7 +77,7 @@ public class CalculatorController {
 				}
 			} else if (e.getSource()==add||e.getSource()==sub||e.getSource()==mul||e.getSource()==div) {
 				// check if math symbols can be appended to the string
-				if (Character.isDigit(last)||last==')') {
+				if (Character.isDigit(last)||last==')'||((last=='('||!textNotNull)&&e.getSource()==sub)) {
 					if (text!=null) text = text+btn;
 					else text = btn;
 					details.setText(text);
@@ -123,12 +123,16 @@ public class CalculatorController {
 			}
 		}
 		// calculate the entire expression value after the values in the parentheses have been calculated
-		if (tokens==null) result = getResult(text);
+		if (tokens==null) {
+			text = getFinalText(text);
+			result = getResult(text);
+		}
 		else {
 			text = tokens[0];
 			for (int i=1; i<tokens.length; i++) {
 				text = text+tokens[i];
 			}
+			text = getFinalText(text);
 			result = getResult(text);
 		}
 		return result;
@@ -148,10 +152,39 @@ public class CalculatorController {
 		
 	}
 	
+	// 
+	private String getFinalText(String text) {
+		for (int i=0; i<text.length(); i++) {
+			// deal with consecutive '-' occurrences
+			if (text.charAt(i)=='-'&&text.charAt(i+1)=='-') {
+				if (i==0) text = text.substring(2, text.length());
+				else {
+					char prev = text.charAt(i-1);
+					if (prev=='+') text = text.replaceFirst(text.substring(i-1, i+2), "+");
+					else if (prev=='*') text = text.replaceFirst(text.substring(i-1, i+2), "*");
+					else if (prev=='/') text = text.replaceFirst(text.substring(i-1, i+2), "/");
+					else if (Character.isDigit(prev)||prev=='('||prev==')') {
+						text = text.replaceFirst(text.substring(i, i+2),"+");
+					}
+				}
+			} else if (text.charAt(i)=='-'&&(i!=0&&text.charAt(i-1)!='('&&text.charAt(i-1)!='+'&&text.charAt(i-1)!='*'&&text.charAt(i-1)!='/')) {
+				// deal with non-consecutive '-' occurrences
+				char prev = text.charAt(i-1);
+				if (Character.isDigit(prev)) {
+					text = text.replaceFirst(text.substring(i, i+1), "+-");
+				} else if (prev==')') {
+					text = text.replaceFirst(text.substring(i, i+1), "+-");
+				}
+			}
+		}
+		return text;
+	}
+	
 	// Calculates the value of a mathematical expression without parentheses
 	private String getResult(String text) {
 		
-		String[] nums = text.split("\\+|\\-|\\*|\\/");
+		text = getFinalText(text);
+		String[] nums = text.split("\\+|\\*|\\/");
 		while (nums.length>1) {
 			double res = -1;
 			boolean foundsym1 = false;
@@ -161,7 +194,7 @@ public class CalculatorController {
 			int occ = 0;
 			int occ2 = 0;
 			for (int i=0; i<text.length(); i++) {
-				if (text.charAt(i)=='+'||text.charAt(i)=='-') {
+				if (text.charAt(i)=='+') {
 					if (!foundsym1) {
 						foundsym1 = true;
 						addSubInd = i;
@@ -183,17 +216,22 @@ public class CalculatorController {
 				else if (s=='/') res = (Double.parseDouble(s1)/Double.parseDouble(s2));
 				String sres = Double.toString(res);
 				text = text.replace(text.substring(mulDivInd-s1.length(), mulDivInd+s2.length()+1), sres);
-				nums = text.split("\\+|\\-|\\*|\\/");
+				if (nums.length==2) {
+					return sres;
+				}
+				nums = text.split("\\+|\\*|\\/");
 			} else if ((occ>0)&&(!foundsym2)) {
 				char s = ' ';
 				String s1 = nums[occ-1];
 				String s2 = nums[occ];
 				if (addSubInd>=0) s = text.charAt(addSubInd);
 				if (s=='+') res = (Double.parseDouble(s1)+Double.parseDouble(s2));
-				else if (s=='-') res = (Double.parseDouble(s1)-Double.parseDouble(s2));
 				String sres = Double.toString(res);
 				text = text.replace(text.substring(addSubInd-s1.length(), addSubInd+s2.length()+1), sres);
-				nums = text.split("\\+|\\-|\\*|\\/");
+				if (nums.length==2) {
+					return sres;
+				}
+				nums = text.split("\\+|\\*|\\/");
 			}
 		}
 		return nums[0];
