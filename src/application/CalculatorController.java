@@ -62,14 +62,14 @@ public class CalculatorController {
 				last = ' ';
 			}
 			if (e.getSource()==paropen) { // check if '(' can be appended to the string
-				if (last=='+'||last=='-'||last=='*'||last=='/'||!textNotNull) {
+				if (last=='+'||last=='-'||last=='*'||last=='/'||last=='('||!textNotNull) {
 					if (text!=null) text = text+btn;
 					else text = btn;
 					details.setText(text);
 					textNotNull = true;
 				}
 			} else if (e.getSource()==parclose) { // check if ')' can be appended to the string
-				if (Character.isDigit(last)) {
+				if (Character.isDigit(last)||last==')') {
 					if (text!=null) text = text+btn;
 					else text = btn;
 					details.setText(text);
@@ -114,24 +114,13 @@ public class CalculatorController {
 	private String calculate(String text) {
 		
 		boolean parenthesesFound = search(text,'(')&&search(text,')');
-		String[] tokens = null;
-		if (parenthesesFound) { // calculate the expressions' into parentheses values
-			tokens = text.split("[()]");
-			for (int i=1; i<tokens.length; i+=2) {
-				String res = getResult(tokens[i]);
-				tokens[i] = res;
-			}
-		}
-		// calculate the entire expression value after the values in the parentheses have been calculated
-		if (tokens==null) {
-			text = getFinalText(text);
+		if (parenthesesFound) {
+			text = calcParentheses(text); // calculate the expressions into parentheses
+			text = getFinalText(text); // calculate the whole expression
 			result = getResult(text);
 		}
+		// calculate the whole expression value if there are no parentheses
 		else {
-			text = tokens[0];
-			for (int i=1; i<tokens.length; i++) {
-				text = text+tokens[i];
-			}
 			text = getFinalText(text);
 			result = getResult(text);
 		}
@@ -152,7 +141,31 @@ public class CalculatorController {
 		
 	}
 	
-	// 
+	// calculates the result inside the parentheses
+	private String calcParentheses(String text) {
+		int paropenind = -1;
+		int parcloseind = -1;
+		boolean done = false;
+		String res = null;
+		while (!done) {
+			for (int i=0; i<text.length(); i++) {
+				if (text.charAt(i)=='(') {
+					paropenind = i;
+				} else if (text.charAt(i)==')') {
+					parcloseind = i;
+					String temp = text.substring(paropenind+1, parcloseind);
+					temp = getFinalText(temp);
+					res = getResult(temp);
+					text = text.replace(text.substring(paropenind, parcloseind+1), res);
+					if (!search(text,')')) done = true;
+					break;
+				}
+			}
+		}
+		return text;
+	}
+	
+	// changes the text in a form getResult wants it to be
 	private String getFinalText(String text) {
 		for (int i=0; i<text.length(); i++) {
 			// deal with consecutive '-' occurrences
