@@ -37,9 +37,14 @@ public class CalculatorController {
 	private void buttonsClicked(ActionEvent e) {
 		
 		if (e.getSource()==equals) { // calculate the result
-			String result = calculate(text);
-			text = result;
-			details.setText(text);
+			text = details.getText();
+			try {
+				String result = calculate(text);
+				text = result;
+				details.setText(text);
+			} catch (Exception ex) { // catch the exception in case there is a problem with the text
+				ex.printStackTrace();
+			}
 		} else if (e.getSource()==clear) { // clear the text field
 			details.setText(null);
 			text = null;
